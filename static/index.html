@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indore Smart Pipeline Failure Prediction System</title>
+    
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet.js GIS Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom styling -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="gov-theme">
+    
+    <!-- TOP GOVT TRICOLOR BAR -->
+    <div class="gov-header-bar"></div>
+
+    <div class="app-container">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-water brand-icon"></i>
+                <div class="brand-text">
+                    <h1 data-i18n="brand-name">जल प्रदाय विभाग</h1>
+                    <span data-i18n="brand-sub">इंदौर नगर निगम</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-target="dashboard-tab">
+                    <i class="fa-solid fa-square-poll-horizontal"></i>
+                    <span data-i18n="nav-dashboard">मुख्य डैशबोर्ड (Monitor)</span>
+                </a>
+                <a href="#" class="nav-item" data-target="gis-tab">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span data-i18n="nav-gis">GIS पाइपलाइन नेटवर्क</span>
+                </a>
+                <a href="#" class="nav-item" data-target="predict-tab">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span data-i18n="nav-predict">विफलता पूर्वानुमान</span>
+                </a>
+                <a href="#" class="nav-item" data-target="maintenance-tab">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span data-i18n="nav-maintenance">अनुरक्षण अनुशंसाएं</span>
+                </a>
+                <a href="#" class="nav-item" data-target="settings-tab" id="nav-settings-item">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span data-i18n="nav-settings">अलार्म सेटिंग्स</span>
+                    <i class="fa-solid fa-lock" id="settings-lock-icon"></i>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="status-dot online"></span>
+                    <span class="status-text" data-i18n="status-text">सिस्टम लाइव मॉनिटर</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            
+            <!-- TOP HEADER BAR -->
+            <header class="top-header">
+                <div class="header-title-box">
+                    <div class="header-emblem">
+                        <i class="fa-solid fa-monument"></i>
+                    </div>
+                    <div class="header-title">
+                        <h2 id="page-title" data-i18n="title-main">स्मार्ट जल ग्रिड नियंत्रण केंद्र</h2>
+                        <p class="sub-text" data-i18n="title-sub">इंदौर जल प्रदाय नेटवर्क प्रबंधन प्रणाली (जल प्रदाय संभाग)</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <!-- Theme and Language Switchers -->
+                    <button id="theme-toggle-btn" class="theme-btn" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    
+                    <button id="lang-toggle-btn" class="lang-btn" title="Change Language">
+                        <i class="fa-solid fa-language"></i> <span>EN</span>
+                    </button>
+                    
+                    <!-- Role Switcher Badge -->
+                    <button id="role-badge-btn" class="role-badge employee" title="Switch User Role">
+                        <i class="fa-solid fa-user"></i> <span id="current-role-text" data-i18n="role-employee">Local Employee</span>
+                    </button>
+
+                    <!-- Global Authority Filter -->
+                    <div class="filter-box">
+                        <label for="authority-filter"><i class="fa-solid fa-users-gear"></i> <span data-i18n="label-zone">प्राधिकृत ज़ोन:</span></label>
+                        <select id="authority-filter" class="form-select">
+                            <option value="" data-i18n="option-all-zones">-- सभी इंदौर ज़ोन कार्यालय --</option>
+                            <!-- Dynamic populated options -->
+                        </select>
+                    </div>
+                    
+                    <button id="btn-pdf-report" class="btn btn-primary">
+                        <i class="fa-solid fa-file-pdf"></i> <span data-i18n="btn-pdf">PDF रिपोर्ट डाउनलोड</span>
+                    </button>
+                    
+                    <button id="btn-csv-report" class="btn btn-secondary">
+                        <i class="fa-solid fa-file-csv"></i> <span data-i18n="btn-csv">CSV डेटा निर्यात</span>
+                    </button>
+                </div>
+            </header>
+            
+            <div class="content-body">
+                
+                <!-- TAB 1: REAL-TIME MONITOR / DASHBOARD -->
+                <div id="dashboard-tab" class="tab-content active">
+                    
+                    <!-- KPI CARDS -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon color-blue">
+                                <i class="fa-solid fa-network-wired"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <h3 data-i18n="kpi-total-pipes-lbl">कुल पाइपलाइन खंड</h3>
+                                <p id="kpi-total-pipes">0</p>
+                                <span class="kpi-subtext" data-i18n="sub-total">कुल मॉनिटर किए गए</span>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card border-danger">
+                            <div class="kpi-icon color-red pulse-glow">
+                                <i class="fa-solid fa-droplet-slash"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <h3 data-i18n="kpi-active-leaks-lbl">सक्रिय रिसाव (Leaks)</h3>
+                                <p id="kpi-active-leaks" class="text-danger">0</p>
+                                <span class="kpi-subtext text-danger" data-i18n="sub-active">तत्काल कार्रवाई आवश्यक</span>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card border-warning">
+                            <div class="kpi-icon color-orange">
+                                <i class="fa-solid fa-shield-virus"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <h3 data-i18n="kpi-high-risk-lbl">अति संवेदनशील खंड</h3>
+                                <p id="kpi-high-risk" class="text-warning">0</p>
+                                <span class="kpi-subtext text-warning" data-i18n="sub-high">विफलता जोखिम > 40%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="kpi-card">
+                            <div class="kpi-icon color-green">
+                                <i class="fa-solid fa-gauge"></i>
+                            </div>
+                            <div class="kpi-info">
+                                <h3 data-i18n="kpi-avg-pressure-lbl">औसत जल दबाव</h3>
+                                <p id="kpi-avg-pressure">0 PSI</p>
+                                <span class="kpi-subtext" data-i18n="sub-pressure">ग्रिड का औसत मान</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- CHARTS GRID -->
+                    <div class="charts-grid">
+                        <div class="chart-card grid-col-2">
+                            <div class="chart-header">
+                                <h4 data-i18n="chart-pressure-flow-title">पाइपलाइन दबाव और प्रवाह दर (Telemetry Analysis)</h4>
+                                <div class="chart-header-actions">
+                                    <span class="chart-tag" data-i18n="chart-pressure-flow-tag">ऐतिहासिक और वास्तविक समय प्रवृत्ति</span>
+                                    <button class="btn-chart-info" onclick="toggleChartInfo('press-flow-info')">
+                                        <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn-guide">Guide</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-info-box" id="press-flow-info">
+                                <p data-i18n="chart-pressure-flow-info">This chart displays water pressure (blue line, left axis) and flow rate (purple line, right axis) for 20 Indore pipeline segments. A sudden pressure drop with a flow rate surge indicates a pipe burst or leakage anomaly. The Random Forest models use this correlation for real-time predictions.</p>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="pressureFlowChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 data-i18n="chart-ward-title">वार्ड-वार सक्रिय विफलता वितरण</h4>
+                                <div class="chart-header-actions">
+                                    <span class="chart-tag" data-i18n="chart-ward-tag">रिसाव आवृत्तियाँ</span>
+                                    <button class="btn-chart-info" onclick="toggleChartInfo('ward-failure-info')">
+                                        <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn-guide">Guide</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-info-box" id="ward-failure-info">
+                                <p data-i18n="chart-ward-info">This chart shows the distribution of active leak frequencies (Leakage_Flag = 1) across administrative wards. It highlights wards with aging infrastructure (hotspots), helping engineers prioritize localized pipeline replacement schemes.</p>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="wardFailureChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4 data-i18n="chart-scatter-title">दबाव बनाम प्रवाह क्लस्टर विश्लेषण</h4>
+                                <div class="chart-header-actions">
+                                    <span class="chart-tag" data-i18n="chart-scatter-tag">विसंगति क्लस्टर</span>
+                                    <button class="btn-chart-info" onclick="toggleChartInfo('scatter-info')">
+                                        <i class="fa-solid fa-circle-info"></i> <span data-i18n="btn-guide">Guide</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-info-box" id="scatter-info">
+                                <p data-i18n="chart-scatter-info">This scatter chart plots flow rate (X-axis) vs water pressure (Y-axis) for each pipeline segment. Standard operational pipes cluster in a specific hydraulic zone. Off-cluster scatter points indicate anomalies like joint failure, clogging, or leakages.</p>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="riskScatterChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- LIVE SIMULATION ALERTS FEED -->
+                    <div class="alerts-feed-card">
+                        <div class="feed-header">
+                            <h4><span class="feed-live-dot"></span> <span data-i18n="alerts-feed-title">वास्तविक समय विसंगति और रिसाव अलार्म लॉग्स</span></h4>
+                            <span class="feed-subtitle" data-i18n="alerts-feed-sub">सेंसर सिमुलेशन द्वारा स्वचालित रूप से पहचाने गए अलार्म</span>
+                        </div>
+                        <div class="alerts-list" id="live-alerts-feed">
+                            <div class="alert-empty" data-i18n="alerts-empty">System operating normally. No active alarms.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TAB 2: GIS VISUALIZATION -->
+                <div id="gis-tab" class="tab-content">
+                    <div class="map-layout">
+                        <div class="map-sidebar">
+                            <h4 data-i18n="gis-legend-title">पाइपलाइन संकेतक</h4>
+                            <div class="legend-list">
+                                <div class="legend-item">
+                                    <span class="legend-line line-green"></span>
+                                    <span data-i18n="gis-legend-normal">सामान्य संचालन खंड</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-line line-orange"></span>
+                                    <span data-i18n="gis-legend-medium">मध्यम जोखिम (जोखिम स्कोर > 20)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-line line-red"></span>
+                                    <span data-i18n="gis-legend-leak">सक्रिय विफलता/लीकेज खंड</span>
+                                </div>
+                            </div>
+                            
+                            <hr class="divider">
+                            
+                            <h4 data-i18n="gis-filter-title">पाइपलाइन फ़िल्टर नियंत्रण</h4>
+                            <div class="layer-controls-box">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="layer-normal" checked>
+                                    <label for="layer-normal" data-i18n="gis-filter-normal">सामान्य पाइपलाइन दिखाएं</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="layer-high-risk" checked>
+                                    <label for="layer-high-risk" data-i18n="gis-filter-high">उच्च जोखिम पाइपलाइन दिखाएं</label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="layer-leakage" checked>
+                                    <label for="layer-leakage" data-i18n="gis-filter-leak">सक्रिय लीकेज दिखाएं</label>
+                                </div>
+                            </div>
+                            
+                            <hr class="divider">
+                            
+                            <h4 data-i18n="gis-search-title">वार्ड/पाइप ID खोजें</h4>
+                            <div class="search-box">
+                                <input type="text" id="map-search-input" placeholder="Search (e.g. IND-PIPE)..." data-i18n-placeholder="gis-search-placeholder" class="form-input">
+                            </div>
+                            
+                            <div class="pipes-quick-list" id="map-pipes-list">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+                        <div class="map-container-wrapper">
+                            <div class="map-layer-toggle" id="map-layer-toggle">
+                                <button class="map-layer-btn active" data-layer="street" data-i18n="map-btn-street">Street</button>
+                                <button class="map-layer-btn" data-layer="satellite" data-i18n="map-btn-satellite">Satellite</button>
+                            </div>
+                            <div id="gis-map"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TAB 3: PREDICTIVE DIAGNOSTICS -->
+                <div id="predict-tab" class="tab-content">
+                    <div class="diagnostics-grid">
+                        
+                        <!-- SLIDERS INPUT FORM -->
+                        <div class="form-card">
+                            <div class="card-header">
+                                <h4 data-i18n="diag-form-title">AI-आधारित विफलता विश्लेषण उपकरण</h4>
+                                <p data-i18n="diag-form-sub">telemetry इनपुट मानों को एडजस्ट करें और मशीन लर्निंग मॉडल द्वारा तत्काल परिणाम प्राप्त करें</p>
+                            </div>
+                            
+                            <div class="pipe-selector-row">
+                                <label for="diagnostics-pipe-template" data-i18n="diag-pipe-label">पाइप आईडी से लोड करें:</label>
+                                <select id="diagnostics-pipe-template" class="form-select">
+                                    <option value="" data-i18n="diag-pipe-placeholder">-- इंदौर पाइपलाइन डेटासेट से सेगमेंट चुनें --</option>
+                                    <!-- Dynamic -->
+                                </select>
+                            </div>
+                            
+                            <form id="diagnostics-form">
+                                <div class="input-grid">
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-flow-lbl">Flow Rate (L/s)</span> <span class="range-val" id="val-flow">75.0</span></label>
+                                        <input type="range" id="input-flow" min="10" max="150" step="0.5" value="75" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-temp-lbl">Temperature (°C)</span> <span class="range-val" id="val-temp">95.0</span></label>
+                                        <input type="range" id="input-temp" min="60" max="130" step="0.5" value="95" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-vib-lbl">Vibration (mm/s)</span> <span class="range-val" id="val-vib">2.8</span></label>
+                                        <input type="range" id="input-vib" min="1" max="5" step="0.1" value="2.8" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-rpm-lbl">Pump RPM</span> <span class="range-val" id="val-rpm">1800</span></label>
+                                        <input type="range" id="input-rpm" min="800" max="3000" step="50" value="1800" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-hours-lbl">Operational Hours</span> <span class="range-val" id="val-hours">4500</span></label>
+                                        <input type="range" id="input-hours" min="100" max="10000" step="100" value="4500" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-lat-lbl">Latitude</span> <span class="range-val" id="val-lat">22.70</span></label>
+                                        <input type="range" id="input-lat" min="22.6" max="22.8" step="0.001" value="22.70" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label><span data-i18n="diag-lon-lbl">Longitude</span> <span class="range-val" id="val-lon">75.85</span></label>
+                                        <input type="range" id="input-lon" min="75.8" max="76.0" step="0.001" value="75.85" class="slider">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label data-i18n="diag-zone-lbl">Zone Code</label>
+                                        <select id="input-zone-enc" class="form-select">
+                                            <option value="0">Rajwada Zone (0)</option>
+                                            <option value="1">Vijay Nagar Zone (1)</option>
+                                            <option value="2">Kalani Nagar Zone (2)</option>
+                                            <option value="3" selected>Sirpur Zone (3)</option>
+                                            <option value="4">Rajendra Nagar Zone (4)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="button" id="btn-run-prediction" class="btn btn-primary btn-full">
+                                        <i class="fa-solid fa-microchip"></i> <span data-i18n="diag-run-btn">विफलता जोखिम पूर्वानुमान चलाएं</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- PREDICTIONS DISPLAY GAUGE -->
+                        <div class="display-card">
+                            <div class="card-header">
+                                <h4 data-i18n="diag-result-title">मशीन लर्निंग पूर्वानुमान परिणाम</h4>
+                                <span class="badge" id="severity-badge" data-i18n="badge-safe">Safe</span>
+                            </div>
+                            
+                            <div class="prediction-results">
+                                <!-- Leakage Probability Gauge -->
+                                <div class="gauge-box">
+                                    <h5 data-i18n="diag-leak-gauge">अनुमानित रिसाव जोखिम (Leakage Risk)</h5>
+                                    <div class="circular-progress-wrapper">
+                                        <div class="circular-progress" id="leak-progress">
+                                            <div class="inner-circle">
+                                                <span class="percentage-val" id="text-leak-prob">0.0%</span>
+                                                <span class="percentage-label" data-i18n="diag-leak-label">विफलता जोखिम</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Water Pressure Prediction Gauge -->
+                                <div class="gauge-box">
+                                    <h5 data-i18n="diag-pressure-gauge">अनुमानित पाइपलाइन दबाव (Pressure)</h5>
+                                    <div class="circular-progress-wrapper">
+                                        <div class="circular-progress" id="pressure-progress">
+                                            <div class="inner-circle">
+                                                <span class="percentage-val" id="text-predicted-pressure">0.0 PSI</span>
+                                                <span class="percentage-label" data-i18n="diag-pressure-label">दबाव</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr class="divider">
+                            
+                            <div class="diagnostic-recommendations">
+                                <h5 data-i18n="diag-rec-title">सुरक्षात्मक रखरखाव अनुशंसाएं:</h5>
+                                <ul id="diagnostic-rec-list">
+                                    <li data-i18n="diag-rec-placeholder">Recommendations will appear here after running the model.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TAB 4: MAINTENANCE RECOMMENDATIONS -->
+                <div id="maintenance-tab" class="tab-content">
+                    <div class="maintenance-layout">
+                        <div class="rec-section-header">
+                            <h3 data-i18n="maint-header">प्राथमिकता-वार रखरखाव अनुसूची (Priority Actions)</h3>
+                            <p data-i18n="maint-sub">उपकरण के wear factor, thermal stress और ML रिसाव जोखिम के आधार पर सुझाई गई गतिविधियाँ</p>
+                        </div>
+                        
+                        <div class="recommendations-column-grid">
+                            
+                            <!-- CRITICAL LEVEL -->
+                            <div class="rec-column">
+                                <div class="col-title bg-danger-transparent text-danger">
+                                    <i class="fa-solid fa-circle-exclamation"></i> <span data-i18n="maint-critical">Critical (Active Failures)</span>
+                                </div>
+                                <div class="rec-card-list" id="critical-rec-list">
+                                    <div class="rec-card-empty" data-i18n="maint-empty-critical">All segments operating normally.</div>
+                                </div>
+                            </div>
+                            
+                            <!-- HIGH RISK LEVEL -->
+                            <div class="rec-column">
+                                <div class="col-title bg-warning-transparent text-warning">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> <span data-i18n="maint-high">High Risk (Risk > 40%)</span>
+                                </div>
+                                <div class="rec-card-list" id="high-rec-list">
+                                    <div class="rec-card-empty" data-i18n="maint-empty-high">No high-risk segments.</div>
+                                </div>
+                            </div>
+                            
+                            <!-- SCHEDULED LEVEL -->
+                            <div class="rec-column">
+                                <div class="col-title bg-info-transparent text-info">
+                                    <i class="fa-solid fa-clock"></i> <span data-i18n="maint-scheduled">Scheduled Maintenance (Wear > 0.8)</span>
+                                </div>
+                                <div class="rec-card-list" id="scheduled-rec-list">
+                                    <div class="rec-card-empty" data-i18n="maint-empty-sched">No scheduled inspections required.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TAB 5: ALERT SETTINGS -->
+                <div id="settings-tab" class="tab-content">
+                    <div class="settings-grid">
+                        
+                        <!-- ALERT EMAIL CONFIG (SMTP handled internally) -->
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h4><i class="fa-solid fa-envelope"></i> <span data-i18n="settings-email-title">Alert Email Configuration</span></h4>
+                                <p data-i18n="settings-email-sub">Set the email address to receive alerts for leakage or anomaly events</p>
+                            </div>
+                            
+                            <form id="smtp-config-form">
+                                <div class="form-row">
+                                    <div class="form-group col-12">
+                                        <label for="alert_email" data-i18n="settings-alert-email-lbl">Authority Alert Email</label>
+                                        <input type="email" id="alert_email" placeholder="authority@indore.gov.in" class="form-input">
+                                        <small class="form-help-text" data-i18n="settings-alert-email-help">Whenever a critical anomaly or leakage is detected, an alert will be sent to this email</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-actions-settings">
+                                    <button type="button" id="btn-save-smtp" class="btn btn-primary">
+                                        <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="settings-save-btn">Save Settings</span>
+                                    </button>
+                                    <button type="button" id="btn-test-smtp" class="btn btn-secondary">
+                                        <i class="fa-solid fa-paper-plane"></i> <span data-i18n="settings-test-btn">Send Test Email</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- RISK THRESHOLDS CARD -->
+                        <div class="settings-card">
+                            <div class="card-header">
+                                <h4><i class="fa-solid fa-sliders"></i> <span data-i18n="settings-thresh-title">Anomaly Alarm Thresholds</span></h4>
+                                <p data-i18n="settings-thresh-sub">Set the threshold limits for triggering alarms during real-time analysis</p>
+                            </div>
+                            
+                            <div class="threshold-sliders">
+                                <div class="threshold-group">
+                                    <div class="threshold-label">
+                                        <span data-i18n="settings-thresh-leak">Failure Probability Threshold</span>
+                                        <span class="badge" id="lbl-thresh-leak">70%</span>
+                                    </div>
+                                    <input type="range" id="thresh-leak" min="50" max="95" step="5" value="70" class="slider slider-warning">
+                                </div>
+                                
+                                <div class="threshold-group">
+                                    <div class="threshold-label">
+                                        <span data-i18n="settings-thresh-press-low">Low Pressure Alarm Threshold</span>
+                                        <span class="badge" id="lbl-thresh-press-low">45.0 PSI</span>
+                                    </div>
+                                    <input type="range" id="thresh-press-low" min="20" max="55" step="1.0" value="45" class="slider slider-info">
+                                </div>
+                                
+                                <div class="threshold-group">
+                                    <div class="threshold-label">
+                                        <span data-i18n="settings-thresh-press-high">High Pressure Alarm Threshold</span>
+                                        <span class="badge" id="lbl-thresh-press-high">75.0 PSI</span>
+                                    </div>
+                                    <input type="range" id="thresh-press-high" min="65" max="90" step="1.0" value="75" class="slider slider-danger">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </main>
+    </div>
+    
+    <!-- REPORT OPTIONS MODAL -->
+    <div id="report-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-pdf"></i> <span data-i18n="modal-report-title">PDF Report Options</span></h3>
+                <button class="modal-close" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group mb-4">
+                    <label><b data-i18n="modal-scope-lbl">Report Scope</b></label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="report-scope" value="bulk" checked>
+                            <span data-i18n="modal-scope-bulk">Bulk Grid / Zone</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="report-scope" value="single">
+                            <span data-i18n="modal-scope-single">Particular Pipe</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Scope: Bulk Section -->
+                <div id="modal-bulk-section">
+                    <div class="form-group mb-3">
+                        <label for="modal-zone-filter" data-i18n="modal-zone-lbl">Select Zone Office:</label>
+                        <select id="modal-zone-filter" class="form-select w-full">
+                            <option value="" data-i18n="option-all-zones">-- All Indore Zone Offices --</option>
+                            <!-- Dynamically populated options -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Scope: Single Pipe Section -->
+                <div id="modal-single-section" style="display: none;">
+                    <div class="form-group mb-3">
+                        <label for="modal-pipe-id" data-i18n="modal-pipe-lbl">Select Pipe ID:</label>
+                        <select id="modal-pipe-id" class="form-select w-full">
+                            <option value="" data-i18n="modal-pipe-placeholder">-- Select Pipeline Segment --</option>
+                            <!-- Dynamically populated options -->
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="modal-time-period" data-i18n="modal-time-lbl">Time Period Filter:</label>
+                        <select id="modal-time-period" class="form-select w-full">
+                            <option value="current">Current Telemetry Snapshot Only</option>
+                            <option value="1">Last 1 Day (24 Hours Trend Analysis)</option>
+                            <option value="2">Last 2 Days (48 Hours Trend Analysis)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="modal-btn-cancel" class="btn btn-secondary" data-i18n="modal-cancel">Cancel</button>
+                <button id="modal-btn-download" class="btn btn-primary">
+                    <i class="fa-solid fa-download"></i> <span data-i18n="modal-download">Download PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-shield"></i> <span data-i18n="login-title">प्रशासक लॉगिन (Administrator Login)</span></h3>
+                <button class="modal-close" id="login-modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="admin-login-form">
+                    <div class="form-group mb-3">
+                        <label for="login-username"><b data-i18n="login-user-lbl">उपयोगकर्ता नाम (Username)</b></label>
+                        <input type="text" id="login-username" placeholder="admin" class="form-input w-full" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="login-password"><b data-i18n="login-pass-lbl">पासवर्ड (Password)</b></label>
+                        <input type="password" id="login-password" placeholder="••••••••" class="form-input w-full" required>
+                    </div>
+                    <div id="login-error-msg" class="text-danger" style="margin-top: 10px; font-size: 12.5px; display: none; font-weight: 600;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="login-btn-cancel" class="btn btn-secondary" data-i18n="login-cancel">रद्द करें (Cancel)</button>
+                <button id="login-btn-submit" class="btn btn-primary">
+                    <i class="fa-solid fa-lock-open"></i> <span data-i18n="login-submit">लॉगिन (Log In)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom scripts -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

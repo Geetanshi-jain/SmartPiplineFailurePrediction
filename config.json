@@ -1,0 +1,8 @@
+{
+    "alert_email": "jaingeetanshi175@gmail.com",
+    "pressure_threshold_low": 45.0,
+    "pressure_threshold_high": 75.0,
+    "leak_prob_threshold": 0.7,
+    "admin_username": "admin",
+    "admin_password": "admin123"
+}
