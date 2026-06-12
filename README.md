@@ -26,16 +26,13 @@ An AI-powered IoT analytics and predictive maintenance system developed for the 
 ## 📸 Screenshots
 
 | Main Dashboard (Monitor) | GIS Pipeline Network |
+| Main Dashboard (Monitor) | GIS Pipeline Network |
 |:---:|:---:|
-| ![Main Dashboard](<img width="1600" height="719" alt="image" src="https://github.com/user-attachments/assets/544ee066-c680-4980-b74a-04abaf73e3ed" />
-) | ![GIS Map<img width="1600" height="719" alt="image" src="https://github.com/user-attachments/assets/57482802-1bb5-4b9d-8c47-d0a55934637b" />
-) |
+| ![Main Dashboard](https://github.com/user-attachments/assets/544ee066-c680-4980-b74a-04abaf73e3ed) | ![GIS Map](https://github.com/user-attachments/assets/57482802-1bb5-4b9d-8c47-d0a55934637b) |
 
 | Failure Diagnostics (AI Tool) | Maintenance Recommendations |
 |:---:|:---:|
-| ![Failure Diagnostics](<img width="1600" height="719" alt="image" src="https://github.com/user-attachments/assets/92a525cf-3918-4468-8dcc-0a15d3ce8bf4" />
-) | ![Maintenance](<img width="1600" height="723" alt="image" src="https://github.com/user-attachments/assets/317148d3-76c3-49ad-95f8-2a2fc22c13b1" />
-) |
+| ![Failure Diagnostics](https://github.com/user-attachments/assets/92a525cf-3918-4468-8dcc-0a15d3ce8bf4) | ![Maintenance](https://github.com/user-attachments/assets/317148d3-76c3-49ad-95f8-2a2fc22c13b1) |
 
 ---
 
