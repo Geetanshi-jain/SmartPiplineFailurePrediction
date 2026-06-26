@@ -37,6 +37,15 @@ Instead of waiting for a pipeline to fail, this system enables **predictive main
 
 ---
 
+
+
+
+**Dataset Source:**  
+
+🔗 https://www.kaggle.com/datasets/talha97s/smart-water-leak-detection-dataset
+
+
+
 ## 🌟 Key Features
 
 1. **Dual Machine Learning Engine:**
