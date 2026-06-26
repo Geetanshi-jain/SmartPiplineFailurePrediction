@@ -2,6 +2,37 @@
 
 An AI-powered IoT analytics and predictive maintenance system developed for the **Water Works Department, Indore Municipal Corporation (जल प्रदाय विभाग, इंदौर नगर निगम)**. This platform simulates, predicts, visualizes, and alerts engineers about pipeline failures and water leakages across Indore.
 
+# 💡 Why I Built This Project
+
+
+
+Every project starts with a question. Mine started with a real incident.
+
+
+
+While exploring real-world applications of Artificial Intelligence, I came across the **Bhagirathpura water contamination incident** in **Indore (January 2026)**. According to reports, a leak in the main drinking water pipeline allowed sewage to mix with the drinking water supply. By the time the leakage was identified, the contamination had already spread, affecting more than **1,400 people** and resulting in multiple deaths.
+
+
+
+This incident highlighted a major limitation of the current water distribution system: pipeline failures are usually detected only after they have already caused significant damage. Most municipal authorities still rely on **reactive maintenance**, where repairs begin only after a leak or pipeline breakdown is reported. As a result, large amounts of treated water are wasted, maintenance costs increase, water supply gets disrupted, and in severe cases, public health is put at risk.
+
+
+
+This raised a simple but important question:
+
+
+
+> **"What if we could predict pipeline failures before they happen instead of reacting after the damage is done?"**
+
+
+
+That question became the inspiration behind this project.
+
+
+
+Instead of waiting for a pipeline to fail, this system enables **predictive maintenance** by detecting potential failures in advance. Integrated with **GIS-based visualization**, **real-time alert notifications**, and **Role-Based Access Control (RBAC)**, it empowers municipal authorities to quickly identify affected locations, assign responsibilities to the appropriate teams, and take preventive action before a minor issue becomes a major public health crisis.
+
+
 > 🌐 **Live Demo:** [incandescent-horse-ee5418.netlify.app](https://incandescent-horse-ee5418.netlify.app)
 
 ---
